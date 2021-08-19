@@ -9,8 +9,11 @@ import Login from "./components/Login";
 
 function App() {
   const myStorage = window.localStorage;
-  const [currentUsername, setCurrentUsername] = useState(myStorage.getItem("user"));
+  const [currentUsername, setCurrentUsername] = useState(
+    myStorage.getItem("user")
+  );
   const [pins, setPins] = useState([]);
+  const [attractions, setAttractions] = useState([]);
   const [currentPlaceId, setCurrentPlaceId] = useState(null);
   const [newPlace, setNewPlace] = useState(null);
   const [title, setTitle] = useState(null);
@@ -18,7 +21,7 @@ function App() {
   const [star, setStar] = useState(0);
   const [viewport, setViewport] = useState({
     latitude: 9.02497,
-    longitude:  38.74689,
+    longitude: 38.74689,
     zoom: 14,
   });
   const [showRegister, setShowRegister] = useState(false);
@@ -51,7 +54,7 @@ function App() {
     try {
       const res = await axios.post("/pins", newPin);
       setPins([...pins, res.data]);
-      console.log(`pins`, pins)
+      console.log(`pins`, pins);
       setNewPlace(null);
     } catch (err) {
       console.log(err);
@@ -67,7 +70,17 @@ function App() {
         console.log(err);
       }
     };
+    const getAttractions = async () => {
+      try {
+        const allAttractions = await axios.get("/attractions");
+        console.log({ allAttractions });
+        setAttractions(allAttractions?.data[0]?.features);
+      } catch (err) {
+        alert(err);
+      }
+    };
     getPins();
+    getAttractions();
   }, []);
 
   const handleLogout = () => {
@@ -87,6 +100,24 @@ function App() {
         onViewportChange={(viewport) => setViewport(viewport)}
         onDblClick={currentUsername && handleAddClick}
       >
+        {attractions.map((attraction) => {
+          return (
+            <Marker
+              latitude={attraction.geometry.coordinates[1]}
+              longitude={attraction.geometry.coordinates[0]}
+              offsetLeft={-3.5 * viewport.zoom}
+              offsetTop={-7 * viewport.zoom}
+            >
+              <Room
+                style={{
+                  fontSize: 3 * viewport.zoom,
+                  cursor: "pointer",
+                }}
+                // onClick={() => handleMarkerClick(p._id, p.lat, p.long)}
+              />
+            </Marker>
+          );
+        })}
         {pins.map((p) => (
           <>
             <Marker
