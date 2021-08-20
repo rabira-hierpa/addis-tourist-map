@@ -6,7 +6,15 @@ import ReactMapGL, {
   Popup,
 } from "react-map-gl";
 import { useEffect, useRef, useState } from "react";
-import { LocationOff, Room, Search, Star } from "@material-ui/icons";
+import {
+  Fireplace,
+  Hotel,
+  LocationOff,
+  Museum,
+  Room,
+  Search,
+  Star,
+} from "@material-ui/icons";
 import axios from "axios";
 import { format } from "timeago.js";
 import Register from "./components/Register";
@@ -205,24 +213,29 @@ function App() {
               onClick={() => {
                 setShowAttractions(!showAttractions);
               }}
-              className="bg-green-400 focus:bg-green-600 hover:bg-green-dark text-white font-bold py-2 px-1 rounded"
+              className="bg-green-400 focus:bg-green-600 hover:bg-green-dark text-white font-bold py-2 px-1 rounded
+              flex space-x-2
+              "
             >
-              Attractions
+              <Fireplace style={{ color: "white" }} />
+              <span>Attractions</span>
             </button>
             <button
               onClick={() => {
                 setShowMuseums(!showMuseums);
               }}
-              className="bg-yellow-900 hover:bg-yellow-dark text-white font-bold py-2 px-1 rounded"
+              className="bg-yellow-900 hover:bg-yellow-dark text-white font-bold py-2 px-1 rounded flex space-x-2"
             >
-              Museums
+              <Museum style={{ color: "white" }} />
+              <span>Museums</span>
             </button>
             <button
               onClick={() => {
                 setShowGuestHouses(!showGuestHouses);
               }}
-              className="bg-blue-400 hover:bg-blue-dark text-white font-bold py-2 px-1 rounded"
+              className="bg-blue-400 hover:bg-blue-dark text-white font-bold py-2 px-1 rounded flex space-x-2"
             >
+              <Hotel style={{ color: "white" }} />
               Guest Houses
             </button>
           </div>
