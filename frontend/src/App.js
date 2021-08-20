@@ -1,11 +1,20 @@
 import "./app.css";
-import ReactMapGL, { Marker, Popup } from "react-map-gl";
-import { useEffect, useState } from "react";
-import { Room, Star, StarBorder } from "@material-ui/icons";
+import ReactMapGL, {
+  GeolocateControl,
+  Marker,
+  NavigationControl,
+  Popup,
+} from "react-map-gl";
+import { useEffect, useRef, useState } from "react";
+import { LocationOff, Room, Search, Star } from "@material-ui/icons";
 import axios from "axios";
 import { format } from "timeago.js";
 import Register from "./components/Register";
 import Login from "./components/Login";
+import Directions from "react-map-gl-directions";
+import "react-map-gl-directions/mapbox-gl-directions.css";
+import Attractions from "./components/Attractions";
+import Museums from "./components/Museums";
 
 function App() {
   const myStorage = window.localStorage;
@@ -20,12 +29,19 @@ function App() {
   const [desc, setDesc] = useState(null);
   const [star, setStar] = useState(0);
   const [viewport, setViewport] = useState({
-    latitude: 9.02497,
     longitude: 38.74689,
+    latitude: 9.02497,
     zoom: 14,
   });
   const [showRegister, setShowRegister] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const [userLocation, setUserLocation] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const mapBoxContainer = useRef(null);
+
+  const hanldeGetuserLocation = () => {
+    setUserLocation(!userLocation);
+  };
 
   const handleMarkerClick = (id, lat, long) => {
     setCurrentPlaceId(id);
@@ -61,6 +77,28 @@ function App() {
     }
   };
 
+  const getCurrentLocation = () => {
+    navigator.geolocation.getCurrentPosition(successLocation, errorLocation, {
+      enableHighAccuracy: true,
+    });
+  };
+
+  const successLocation = (position) => {
+    setViewport({
+      longitude: position.coords.longitude,
+      latitude: position.coords.latitude,
+      zoom: 14,
+    });
+  };
+
+  const errorLocation = (position) => {
+    setViewport({
+      longitude: 38.74689,
+      latitude: 9.02497,
+      zoom: 14,
+    });
+  };
+
   useEffect(() => {
     const getPins = async () => {
       try {
@@ -80,7 +118,10 @@ function App() {
       }
     };
     getPins();
-    getAttractions();
+    if (!attractions.length) {
+      getAttractions();
+    }
+    getCurrentLocation();
   }, []);
 
   const handleLogout = () => {
@@ -88,47 +129,89 @@ function App() {
     myStorage.removeItem("user");
   };
 
+  const handleSearchInput = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleSearch = (e) => {
+    return null;
+  };
+
   return (
     <div style={{ height: "100vh", width: "100%" }}>
       <ReactMapGL
+        ref={mapBoxContainer}
         {...viewport}
         mapboxApiAccessToken="pk.eyJ1IjoicmFicmEiLCJhIjoiY2tzaTR4cG1vMDhtZTJwbDQ4M2ljcm1yMCJ9.DDn0ldEzSIar94LsRfcoJQ"
         width="100%"
         height="100%"
         transitionDuration="200"
-        mapStyle="mapbox://styles/safak/cknndpyfq268f17p53nmpwira"
+        mapStyle="mapbox://styles/rabra/cksjdndfyawl817pjy5okwbuz"
         onViewportChange={(viewport) => setViewport(viewport)}
         onDblClick={currentUsername && handleAddClick}
       >
-        {attractions.map((attraction) => {
-          return (
-            <Marker
-              latitude={attraction.geometry.coordinates[1]}
-              longitude={attraction.geometry.coordinates[0]}
-              offsetLeft={-3.5 * viewport.zoom}
-              offsetTop={-7 * viewport.zoom}
-            >
-              <Room
-                style={{
-                  fontSize: 3 * viewport.zoom,
-                  cursor: "pointer",
-                }}
-                // onClick={() => handleMarkerClick(p._id, p.lat, p.long)}
-              />
-            </Marker>
-          );
-        })}
-        {pins.map((p) => (
-          <>
+        {userLocation ? (
+          <GeolocateControl
+            style={{ position: "absolute", bottom: "210px", right: "10px" }}
+            positionOptions={{ enableHighAccuracy: true }}
+            onViewStateChange={(viewport) => setViewport(viewport)}
+            trackUserLocation={false}
+            onClick={hanldeGetuserLocation}
+          />
+        ) : (
+          <div
+            onClick={hanldeGetuserLocation}
+            style={{ position: "absolute", bottom: "210px", right: "10px" }}
+          >
+            <LocationOff />
+          </div>
+        )}
+        <NavigationControl
+          style={{ position: "absolute", bottom: "120px", right: "10px" }}
+        />
+        <div class="search-container">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              console.log(e.target[0].value);
+            }}
+            className="flex"
+          >
+            <input
+              className="pl-3 border-none h-8 w-72"
+              type="text"
+              name="search"
+              placeholder="Search.."
+              onChange={handleSearchInput}
+            />
+          </form>
+        </div>
+        <Directions
+          mapRef={mapBoxContainer}
+          unit={"metric"}
+          mapboxApiAccessToken={
+            "pk.eyJ1IjoicmFicmEiLCJhIjoiY2tzaTR4cG1vMDhtZTJwbDQ4M2ljcm1yMCJ9.DDn0ldEzSIar94LsRfcoJQ"
+          }
+          position={"top-left"}
+        />
+        <Attractions
+          attractions={attractions}
+          viewport={viewport}
+          setViewport={setViewport}
+        />
+        <Museums viewport={viewport} setViewport={setViewport} />
+
+        {pins.map((p, idx) => (
+          <div key={idx}>
             <Marker
               latitude={p.lat}
               longitude={p.long}
-              offsetLeft={-3.5 * viewport.zoom}
-              offsetTop={-7 * viewport.zoom}
+              // offsetLeft={-3.5 * viewport.zoom}
+              // offsetTop={-7 * viewport.zoom}
             >
               <Room
                 style={{
-                  fontSize: 7 * viewport.zoom,
+                  fontSize: 4 * viewport.zoom,
                   color:
                     currentUsername === p.username ? "tomato" : "slateblue",
                   cursor: "pointer",
@@ -163,7 +246,7 @@ function App() {
                 </div>
               </Popup>
             )}
-          </>
+          </div>
         ))}
         {newPlace && (
           <>
