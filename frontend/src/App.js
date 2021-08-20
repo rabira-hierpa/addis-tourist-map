@@ -182,7 +182,7 @@ function App() {
         <NavigationControl
           style={{ position: "absolute", bottom: "120px", right: "10px" }}
         />
-        <div class="search-container">
+        {/* <div class="search-container">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -198,7 +198,7 @@ function App() {
               onChange={handleSearchInput}
             />
           </form>
-        </div>
+        </div> */}
         <Directions
           mapRef={mapBoxContainer}
           unit={"metric"}
