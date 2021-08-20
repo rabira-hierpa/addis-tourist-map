@@ -15,6 +15,7 @@ import Directions from "react-map-gl-directions";
 import "react-map-gl-directions/mapbox-gl-directions.css";
 import Attractions from "./components/Attractions";
 import Museums from "./components/Museums";
+import Hotels from "./components/Hotels";
 
 function App() {
   const myStorage = window.localStorage;
@@ -36,6 +37,9 @@ function App() {
   const [showRegister, setShowRegister] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [userLocation, setUserLocation] = useState(false);
+  const [showAttractions, setShowAttractions] = useState(false);
+  const [showMuseums, setShowMuseums] = useState(false);
+  const [showGuestHouses, setShowGuestHouses] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const mapBoxContainer = useRef(null);
 
@@ -156,6 +160,7 @@ function App() {
             positionOptions={{ enableHighAccuracy: true }}
             onViewStateChange={(viewport) => setViewport(viewport)}
             trackUserLocation={false}
+            auto
             onClick={hanldeGetuserLocation}
           />
         ) : (
@@ -181,7 +186,7 @@ function App() {
               className="pl-3 border-none h-8 w-72"
               type="text"
               name="search"
-              placeholder="Search.."
+              placeholder="Search Hotels.."
               onChange={handleSearchInput}
             />
           </form>
@@ -194,13 +199,51 @@ function App() {
           }
           position={"top-left"}
         />
-        <Attractions
-          attractions={attractions}
-          viewport={viewport}
-          setViewport={setViewport}
-        />
-        <Museums viewport={viewport} setViewport={setViewport} />
-
+        <div style={{ position: "absolute", top: "10rem" }}>
+          <div className="pl-2 flex flex-col space-y-2">
+            <button
+              onClick={() => {
+                setShowAttractions(!showAttractions);
+              }}
+              className="bg-green-400 focus:bg-green-600 hover:bg-green-dark text-white font-bold py-2 px-1 rounded"
+            >
+              Attractions
+            </button>
+            <button
+              onClick={() => {
+                setShowMuseums(!showMuseums);
+              }}
+              className="bg-yellow-900 hover:bg-yellow-dark text-white font-bold py-2 px-1 rounded"
+            >
+              Museums
+            </button>
+            <button
+              onClick={() => {
+                setShowGuestHouses(!showGuestHouses);
+              }}
+              className="bg-blue-400 hover:bg-blue-dark text-white font-bold py-2 px-1 rounded"
+            >
+              Guest Houses
+            </button>
+          </div>
+        </div>
+        {showAttractions ? (
+          <Attractions
+            attractions={attractions}
+            viewport={viewport}
+            setViewport={setViewport}
+          />
+        ) : null}
+        {showMuseums ? (
+          <Museums viewport={viewport} setViewport={setViewport} />
+        ) : null}
+        {showGuestHouses ? (
+          <Hotels
+            viewport={viewport}
+            setViewport={setViewport}
+            searchTerm={searchTerm}
+          />
+        ) : null}
         {pins.map((p, idx) => (
           <div key={idx}>
             <Marker
